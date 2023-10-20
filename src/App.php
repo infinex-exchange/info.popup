@@ -71,7 +71,7 @@ class App extends Infinex\App\App {
         $th = $this;
         
         Promise\all([
-            $thos -> popups -> stop(),
+            $this -> popups -> stop(),
             $this -> rest -> stop()
         ]) -> then(
             function() use($th) {
