@@ -15,7 +15,7 @@ class App extends Infinex\App\App {
     private $rest;
     
     function __construct() {
-        parent::__construct('info.popups');
+        parent::__construct('info.popup');
         
         $this -> pdo = new Infinex\Database\PDO(
             $this -> loop,
