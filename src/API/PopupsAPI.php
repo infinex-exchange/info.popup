@@ -1,6 +1,7 @@
 <?php
 
 use Infinex\Exceptions\Error;
+use Infinex\Pagination;
 use function Infinex\Validation\validateId;
 use React\Promise;
 
@@ -20,30 +21,20 @@ class PopupsAPI {
     }
     
     public function getPopups($path, $query, $body, $auth) {
-        if(isset($query['localId']) && !validateId($query['localId']))
-            throw new Error('VALIDATION_ERROR', 'localId', 400);
-        
-        $task = [];
+        $pag = new Pagination\Cursor('popupid', false, 50, 500, $query);
         
         $sql = 'SELECT popupid,
                        title,
                        body
                 FROM popups
-                WHERE enabled = TRUE';
+                WHERE enabled = TRUE'
+             . $pag -> sql();
         
-        if(isset($query['localId'])) {
-            $task[':popupid'] = $query['localId'];
-            $sql .= ' AND popupid > :popupid';
-        }
-        
-        $sql .= ' ORDER BY popupid DESC
-                  LIMIT 10';
-        
-        $q = $this -> pdo -> prepare($sql);
-        $q -> execute($task);
+        $q = $this -> pdo -> query($sql);
         
         $popups = [];
         while($row = $q -> fetch()) {
+            if($pag -> iter($row)) break;
             $popups[] = [
                 'popupid' => $row['popupid'],
                 'title' => $row['title'],
@@ -52,7 +43,8 @@ class PopupsAPI {
         }
         
         return [
-            'popups' => $popups
+            'popups' => $popups,
+            'cursor' => $pag -> cursor
         ];
     }
 }
